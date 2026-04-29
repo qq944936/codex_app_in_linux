@@ -134,3 +134,9 @@ Common overrides:
 - Use `workspace-write` only when you want Codex to modify files inside the configured project directory.
 - Long replies are split into multiple WeChat messages.
 - The Web UI and WeChat bot keep separate session state but both use Codex CLI under the hood.
+
+## Support
+
+If this project helps you, you can support me with a 1 CNY donation via WeChat Pay or Alipay and buy me a coffee.
+
+WeChat Pay / Alipay QR codes can be added here later.
