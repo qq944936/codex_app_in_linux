@@ -1,36 +1,180 @@
-# Weixin Codex UI
+# codex_app_in_linux
+### Run Codex from a browser. Use it from WeChat. Keep it local on Linux.
+
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#requirements)
+[![Codex CLI](https://img.shields.io/badge/Codex-CLI-111827)](#requirements)
+[![WeChat](https://img.shields.io/badge/WeChat-x--cmd-07C160?logo=wechat&logoColor=white)](#wechat-bridge)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [中文说明](README.zh-CN.md)
 
-A local Web UI and WeChat bot wrapper for using OpenAI Codex from Linux.
+> A lightweight local control panel for Codex on Linux.
+>
+> Browser UI for your desktop. WeChat bridge for your phone. Git workflow helpers when you need them.
 
-The project provides:
+```text
+ ██████╗ ██████╗ ██████╗ ███████╗██╗  ██╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝╚██╗██╔╝
+██║     ██║   ██║██║  ██║█████╗   ╚███╔╝
+██║     ██║   ██║██║  ██║██╔══╝   ██╔██╗
+╚██████╗╚██████╔╝██████╔╝███████╗██╔╝ ██╗
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
 
-- A browser UI for configuring and running Codex tasks.
-- WeChat command handling through `x-cmd weixin`.
-- Per-session Codex thread resume for smoother follow-up tasks.
-- Task logs, status timeline, chat history, Git diff view, and basic Git actions.
-- WeChat replies with automatic message splitting for long Codex responses.
+        Web UI + WeChat bridge for Codex
+```
+
+---
+
+## What Is This?
+
+`codex_app_in_linux` is a small Python-based Web UI and WeChat bot wrapper for OpenAI Codex CLI.
+
+You run one local server, open a browser, choose a project directory, and start sending Codex tasks. If you connect WeChat through `x-cmd weixin`, you can also send tasks from WeChat with `/codex ...`.
+
+TL;DR: Codex local task control, with a browser dashboard and a WeChat command bridge.
+
+---
+
+## Quick Start
+
+```bash
+# Clone your repo
+git clone https://github.com/qq944936/codex_app_in_linux.git
+cd codex_app_in_linux
+
+# Create local config
+cp weixin_codex_config.example.json weixin_codex_config.json
+
+# Start the Web UI
+python3 weixin_codex_ui.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8787
+```
+
+In the UI:
+
+1. Set the project directory.
+2. Confirm Codex login or API key.
+3. Click `微信登录` to scan the WeChat login QR code.
+4. Click `启动` to start the WeChat Codex bot.
+
+---
+
+## Features
+
+> The useful bits.
+
+- Browser-first Codex control panel on Linux.
+- Web chat for sending Codex prompts directly.
+- WeChat command bridge with `/codex`.
+- Real Codex session resume for smoother follow-up tasks.
+- Per-Web-session and per-WeChat-session context.
+- Task status timeline and live logs.
+- Stop long-running Web tasks from the UI.
+- Stop long-running WeChat tasks with `/codex stop`.
+- Query WeChat task state with `/codex status`.
+- Automatic long-reply splitting for WeChat messages.
+- Git diff view, staging, commit, pull, and push helpers.
+- Runtime files and personal config ignored by Git by default.
+
+---
+
+## WeChat Bridge
+
+Send a task:
+
+```text
+/codex explain this project
+/codex fix the failing tests
+/codex add a README section for deployment
+```
+
+Control commands:
+
+```text
+/codex status
+/codex stop
+/codex reset
+```
+
+Chinese aliases are supported:
+
+```text
+/codex 状态
+/codex 停止
+/codex 清空上下文
+```
+
+When `x-cmd` provides recognized voice text, voice messages are handled as direct Codex prompts.
+
+---
+
+## Screens And Flow
+
+No marketing page. The first screen is the tool:
+
+- left side: config, login, runtime controls
+- right side: chat, logs, task events, Git changes
+- WeChat messages sync back into the Web UI
+
+---
+
+## Architecture
+
+```text
+┌──────────────────────────────┐
+│ Browser Web UI               │
+│ http://127.0.0.1:8787         │
+└──────────────┬───────────────┘
+               │ local HTTP API
+┌──────────────▼───────────────┐
+│ weixin_codex_ui.py            │
+│ config, sessions, logs, Git   │
+└───────┬──────────────────────┘
+        │ starts / monitors
+┌───────▼──────────────────────┐
+│ weixin_codex_bot.py           │
+│ x-cmd WeChat log listener     │
+└───────┬──────────────────────┘
+        │ /codex prompt
+┌───────▼──────────────────────┐
+│ Codex CLI                     │
+│ exec / exec resume            │
+└──────────────────────────────┘
+```
+
+---
 
 ## Requirements
 
-- Python 3.10+
+- Python `3.10+`
 - Node.js and npm
 - Codex CLI
-- x-cmd with the WeChat module
-- A valid Codex login or OpenAI API key
+- `x-cmd` with the WeChat module
+- Codex login or OpenAI API key
 
-The bot can auto-install some missing dependencies when `auto_install_deps` is enabled in the config.
+Install or login to Codex:
 
-## Setup
+```bash
+npm install -g @openai/codex
+codex login
+```
 
-Copy the example config:
+---
+
+## Config
+
+Create:
 
 ```bash
 cp weixin_codex_config.example.json weixin_codex_config.json
 ```
 
-Edit `weixin_codex_config.json`:
+Example:
 
 ```json
 {
@@ -47,96 +191,54 @@ Edit `weixin_codex_config.json`:
 }
 ```
 
-If `openai_api_key` is blank, sign in with Codex first:
+Important fields:
 
-```bash
-codex login
-```
+- `project_dir`: where Codex reads and works.
+- `codex_sandbox`: use `read-only` for answers, `workspace-write` for code edits.
+- `codex_approval_policy`: `never` is best for non-interactive bot runs.
+- `codex_search`: enables Codex web search when supported.
 
-## Run
-
-Start the Web UI:
-
-```bash
-python3 weixin_codex_ui.py
-```
-
-Open:
-
-```text
-http://127.0.0.1:8787
-```
-
-From the UI you can:
-
-- Save Codex and project settings.
-- Log in to WeChat.
-- Start or stop the WeChat bot.
-- Send Codex tasks directly from the browser.
-- View chat, logs, task state, and Git changes.
-
-## WeChat Commands
-
-Text command format:
-
-```text
-/codex <task>
-```
-
-Examples:
-
-```text
-/codex explain this project
-/codex fix the failing tests
-/codex status
-/codex stop
-/codex reset
-```
-
-Supported control commands:
-
-- `/codex status`, `/codex 状态`, `/codex 进度`: show current task status.
-- `/codex stop`, `/codex 停止`, `/codex 取消`, `/codex 中止`: stop the current task for that WeChat session.
-- `/codex reset`, `/codex 重置`, `/codex 清空上下文`: clear saved context and Codex thread mapping for that WeChat session.
-
-Voice messages are handled as direct Codex prompts when x-cmd provides recognized text.
+---
 
 ## Runtime Files
 
-These files are local runtime state and are intentionally ignored by Git:
+These are local state and are ignored by Git:
 
-- `weixin_codex_config.json`
-- `weixin_codex_context.json`
-- `weixin_codex_events.jsonl`
-- `weixin_codex_sessions.json`
-- `weixin_codex_ui_state.json`
-- `__pycache__/`
-- `.codex`
+```text
+weixin_codex_config.json
+weixin_codex_context.json
+weixin_codex_events.jsonl
+weixin_codex_sessions.json
+weixin_codex_ui_state.json
+__pycache__/
+.codex
+```
 
-Do not commit API keys or personal chat logs.
+Do not commit API keys, personal chat logs, or local runtime state.
 
-## Environment Variables
+---
 
-Common overrides:
+## Troubleshooting
 
-- `WEIXIN_CODEX_UI_HOST`: Web UI bind host. Default: `127.0.0.1`
-- `WEIXIN_CODEX_UI_PORT`: Web UI port. Default: `8787`
-- `WEIXIN_CODEX_CONFIG_FILE`: config file path
-- `WEIXIN_CODEX_CONTEXT_FILE`: WeChat context file path
-- `WEIXIN_CODEX_EVENT_FILE`: Web/WeChat sync event file path
-- `X_CMD_PATH`: path to `x-cmd`
-- `CODEX_CMD`: Codex executable. Default: `codex`
-- `CODEX_TIMEOUT`: Codex task timeout in seconds
+| Problem | Fix |
+| --- | --- |
+| WeChat QR code looks stretched | Refresh after the latest UI; log view uses compact line height. |
+| WeChat shows not logged in | Click `微信登录`, scan the QR code, then click `启动`. |
+| Codex is not logged in | Run `codex login` or set `openai_api_key`. |
+| Long WeChat reply is cut | Replies are split into multiple messages, with a maximum part count. |
+| A WeChat task is stuck | Send `/codex status`, then `/codex stop` if needed. |
+| Need code edits | Set `codex_sandbox` to `workspace-write`. |
 
-## Notes
-
-- Keep `codex_sandbox` as `read-only` when you only want answers.
-- Use `workspace-write` only when you want Codex to modify files inside the configured project directory.
-- Long replies are split into multiple WeChat messages.
-- The Web UI and WeChat bot keep separate session state but both use Codex CLI under the hood.
+---
 
 ## Support
 
 If this project helps you, you can support me with a 1 CNY donation via WeChat Pay or Alipay and buy me a coffee.
 
 WeChat Pay / Alipay QR codes can be added here later.
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
