@@ -1,5 +1,7 @@
 # Weixin Codex UI
 
+[中文说明](README.zh-CN.md)
+
 A local Web UI and WeChat bot wrapper for using OpenAI Codex from Linux.
 
 The project provides:
