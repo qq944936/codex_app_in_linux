@@ -1,0 +1,12 @@
+{
+  "openai_api_key": "",
+  "codex_cmd": "codex",
+  "project_dir": "/home/zhw/Workspace/aichat",
+  "codex_sandbox": "read-only",
+  "codex_approval_policy": "never",
+  "codex_model": "",
+  "codex_reasoning_effort": "",
+  "codex_timeout": 120,
+  "codex_search": false,
+  "auto_install_deps": true
+}

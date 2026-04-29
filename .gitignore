@@ -1,0 +1,8 @@
+weixin_codex_config.json
+weixin_codex_ui_state.json
+weixin_codex_events.jsonl
+weixin_codex_context.json
+weixin_codex_sessions.json
+__pycache__/
+*.py[cod]
+.codex
